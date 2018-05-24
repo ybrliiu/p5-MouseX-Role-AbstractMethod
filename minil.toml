@@ -1,0 +1,4 @@
+name = "MouseX-Role-AbstractMethod"
+# badges = ["travis"]
+module_maker="ModuleBuildTiny"
+
