@@ -23,14 +23,11 @@ sub abstract {
         if @_ % 2; # odd number of arguments
 
     my %args = @_;
-    $args{args} //= +{};
     # $args->{context} //= 'Scalar';
 
-    for my $name (ref($name) ? @{$name} : $name) {
+    for my $name (ref $name eq 'ARRAY' ? @{$name} : $name) {
         
         $meta->add_required_methods($name);
-
-        my $v = Data::Validator->new(%{ $args{args} })->with('Method');
 
         my $type = do {
             if ( exists $args{isa} ) {
@@ -44,19 +41,34 @@ sub abstract {
             }
         };
 
-        my $check_args_and_return_type_func = sub {
-            my $orig = shift;
-            my ($self, $checked_args) = $v->validate(@_);
-            my $return_value = $self->$orig($checked_args);
-            unless ( $type->check($return_value) ) {
-              $meta->throw_error(qq{Mismatch return type : @{[ $meta->name ]}->${name} required '@{[ $type->name ]}'});
+        my $args_and_return_type_checker = do {
+            if ( exists $args{args} ) {
+                my $v = Data::Validator->new(%{ $args{args} })->with('Method');
+                sub {
+                    my $orig = shift;
+                    my ($self, $checked_args) = $v->validate(@_);
+                    my $return_value = $self->$orig($checked_args);
+                    unless ( $type->check($return_value) ) {
+                      $meta->throw_error(qq{Mismatch return type : @{[ $meta->name ]}->${name} required '@{[ $type->name ]}'});
+                    }
+                };
+            }
+            else {
+                sub {
+                    my ($orig, $self) = @_;
+                    my $return_value = $self->$orig();
+                    unless ( $type->check($return_value) ) {
+                      $meta->throw_error(qq{Mismatch return type : @{[ $meta->name ]}->${name} required '@{[ $type->name ]}'});
+                    }
+                };
             }
         };
 
-        # スタックトレースでどこでエラーが起きているかわかりやすくするため
-        my $check_method_name = "__MOUSEX_ROLE_ABSTRACT_METHOD__check_${name}_args_and_return_type";
-        $meta->add_method($check_method_name => $check_args_and_return_type_func);
-        $meta->add_around_method_modifier($name => $check_args_and_return_type_func);
+
+        # スタックトレースでどこでエラーが起きているかわかりやすくするため, 名前をつける
+        my $checker_method_name = "__MOUSEX_ROLE_ABSTRACT_METHOD__check_${name}_args_and_return_type";
+        $meta->add_method($checker_method_name => $args_and_return_type_checker);
+        $meta->add_around_method_modifier($name => $args_and_return_type_checker);
     }
 
     return;
