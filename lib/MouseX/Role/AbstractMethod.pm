@@ -37,7 +37,7 @@ sub abstract {
                 Mouse::Util::TypeConstraints::find_or_create_does_type_constraint($args{does});
             }
             else {
-                Mouse::Util::TypeConstraints::find_or_create_isa_type_constraint('Undef');
+                Mouse::Util::TypeConstraints::find_or_create_isa_type_constraint('Any');
             }
         };
 
