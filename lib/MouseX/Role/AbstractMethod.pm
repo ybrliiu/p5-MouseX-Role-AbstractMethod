@@ -48,10 +48,11 @@ sub abstract {
             my ($self, $checked_args) = $v->validate(@_);
             my $return_value = $self->$orig($checked_args);
             unless ( $type->check($return_value) ) {
-              $meta->throw_error(qq{Mismatch return type : @{[ $meta->name ]}->${name} required @{[ $type->name ]}});
+              $meta->throw_error(qq{Mismatch return type : @{[ $meta->name ]}->${name} required '@{[ $type->name ]}'});
             }
         };
 
+        # スタックトレースでどこでエラーが起きているかわかりやすくするため
         my $check_method_name = "__MOUSEX_ROLE_ABSTRACT_METHOD__check_${name}_args_and_return_type";
         $meta->add_method($check_method_name => $check_args_and_return_type_func);
         $meta->add_around_method_modifier($name => $check_args_and_return_type_func);
@@ -77,9 +78,9 @@ MouseX::Role::AbstractMethod - It's new $module
 
     abstract some_mtehod => (
         isa  => 'Type',
-        args => {
-            arg1 => { isa => 'Int' },
-            arg2 => { isa => 'Bool' },
+        args => +{
+            arg1 => +{ isa => 'Int' },
+            arg2 => +{ isa => 'Bool' },
         },
     );
 
