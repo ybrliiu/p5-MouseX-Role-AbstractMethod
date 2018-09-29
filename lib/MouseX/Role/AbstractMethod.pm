@@ -23,6 +23,7 @@ sub abstract {
         if @_ % 2; # odd number of arguments
 
     my %args = @_;
+    $args{args} //= +{};
     # $args->{context} //= 'Scalar';
 
     for my $name (ref($name) ? @{$name} : $name) {
