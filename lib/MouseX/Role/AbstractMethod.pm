@@ -51,6 +51,7 @@ sub abstract {
                     unless ( $type->check($return_value) ) {
                       $meta->throw_error(qq{Mismatch return type : @{[ $meta->name ]}->${name} required '@{[ $type->name ]}'});
                     }
+                    $return_value;
                 };
             }
             else {
@@ -60,6 +61,7 @@ sub abstract {
                     unless ( $type->check($return_value) ) {
                       $meta->throw_error(qq{Mismatch return type : @{[ $meta->name ]}->${name} required '@{[ $type->name ]}'});
                     }
+                    $return_value;
                 };
             }
         };
